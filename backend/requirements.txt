@@ -1,0 +1,12 @@
+# Web Chat backend. Each line: package, pinned version, why we use it.
+fastapi==0.142.2              # one framework for REST + WebSocket, async, auto API docs
+uvicorn[standard]==0.54.0     # ASGI server; [standard] adds uvloop + WebSocket support
+pydantic[email]==2.13.5       # request validation; [email] checks real email syntax
+pydantic-settings==2.15.0     # typed settings from env vars / .env
+sqlalchemy[asyncio]==2.1.3    # ORM for PostgreSQL (users, tokens)
+asyncpg==0.31.0               # fastest async PostgreSQL driver
+alembic==1.20.0               # DB migrations (used from Sprint 5)
+pymongo==4.18.2               # official MongoDB driver, native async API (Motor is deprecated)
+pwdlib[argon2]==0.3.1         # argon2id password hashing (current best practice)
+pyjwt==2.15.1                 # sign / verify JWT access tokens
+twilio==9.11.2                # Twilio Verify: email OTP

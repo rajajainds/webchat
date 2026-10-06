@@ -1,0 +1,16 @@
+# PRODUCTION (EC2): Nginx + backend. Databases are RDS and MongoDB Atlas (set in .env).
+services:
+  backend:
+    build: ../backend
+    env_file: ../backend/.env          # ENV=prod, DATABASE_URL, MONGO_URL, JWT_SECRET, Twilio...
+    restart: unless-stopped
+    expose: ["8000"]                   # not published: only Nginx can reach it
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    depends_on: [backend]
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
