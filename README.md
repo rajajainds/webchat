@@ -1,6 +1,6 @@
 # Web Chat
 
-A real-time, one-to-one chat application with verified email accounts. Python (FastAPI) backend, React frontend, PostgreSQL for accounts, MongoDB for messages, WebSockets for live delivery, and Twilio Verify for email OTP.
+A real-time, one-to-one chat application with verified email accounts. Python (FastAPI) backend, React frontend, PostgreSQL for accounts, MongoDB for messages, WebSockets for live delivery, and email OTP verification (sent over SMTP, or through Twilio Verify).
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.142-009688?logo=fastapi&logoColor=white)
@@ -12,7 +12,7 @@ A real-time, one-to-one chat application with verified email accounts. Python (F
 
 ## Features
 
-- **Verified accounts:** register with an email, receive a one-time code (Twilio Verify), then set a password. No account exists until the email is verified.
+- **Verified accounts:** register with an email, receive a one-time code by email, then set a password. No account exists until the email is verified.
 - **Profiles:** username (always lowercase), first name, optional last name, bio. No photos: the avatar shows initials (`RJ`, or `R` with no last name).
 - **Find people:** search by username prefix, then open a one-to-one chat.
 - **Real-time messaging:** text and emoji over WebSockets. English, Hindi (Devanagari) and emoji can be mixed in one message.
@@ -29,7 +29,7 @@ flowchart TD
     B -->|WebSocket /ws| A
     A --> P[(PostgreSQL<br/>users, refresh tokens)]
     A --> M[(MongoDB<br/>conversations, messages)]
-    A --> T[Twilio Verify<br/>email OTP]
+    A --> T[Email provider<br/>SMTP or Twilio Verify]
 ```
 
 ![Architecture](docs/architecture.png)
@@ -73,7 +73,7 @@ flowchart TD
 | Backend | Python 3.12, FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2 (async) + asyncpg, PyMongo (native async), PyJWT, pwdlib (argon2id) |
 | Frontend | React 19, Vite, React Router, emoji-picker-react |
 | Data | PostgreSQL 17, MongoDB 8 (run locally with Docker Compose) |
-| Auth / OTP | JWT access + rotating refresh tokens, Twilio Verify (email channel) |
+| Auth / OTP | JWT access + rotating refresh tokens, email OTP (own implementation over SMTP, or Twilio Verify) |
 | Tests | pytest, FastAPI TestClient |
 
 Exact versions are pinned in `backend/requirements.txt` and `frontend/package.json`.
@@ -103,7 +103,7 @@ npm run dev                        # http://localhost:5173
 
 Only the two databases run in Docker. The backend and the Vite dev server run directly on your machine.
 
-**Development OTP:** with the Twilio variables left empty, no email is sent. The verification code is always `123456` and is printed in the backend log. To use real email codes, add your Twilio values to `backend/.env`.
+**Development OTP:** with the SMTP and Twilio variables left empty, no email is sent. The verification code is always `123456` and is printed in the backend log. To receive real codes, fill the `SMTP_*` values (any SMTP server) or the `TWILIO_*` values in `backend/.env`.
 
 ### Try it
 
@@ -129,7 +129,9 @@ Settings are environment variables in `backend/.env` (see `backend/.env.example`
 | `MONGO_URL`, `MONGO_DB` | MongoDB connection string and database name |
 | `JWT_SECRET` | Secret used to sign tokens |
 | `ALLOWED_ORIGINS` | Frontend origin, e.g. `http://localhost:5173` |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID` | From the Twilio console (optional locally) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Any SMTP server, used to email the OTP (optional locally) |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID` | Alternative: Twilio Verify (optional locally) |
+| `OTP_PROVIDER` | `auto` (default), `email`, `twilio` or `dev` |
 
 ## API
 

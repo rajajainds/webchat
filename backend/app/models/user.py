@@ -1,7 +1,7 @@
 # PostgreSQL tables: users and refresh_tokens.
 import uuid
 from datetime import datetime
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Uuid, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from app.core.text import display_name, initials
 
@@ -50,3 +50,14 @@ class RefreshToken(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)  # sha256, never the raw token
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class OtpCode(Base):
+    """One pending email code per address (used when we send OTPs ourselves)."""
+    __tablename__ = "otp_codes"
+
+    email: Mapped[str] = mapped_column(String(254), primary_key=True)
+    code_hash: Mapped[str] = mapped_column(String(64))  # HMAC of the code, never the code itself
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
